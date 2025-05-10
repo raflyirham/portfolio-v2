@@ -9,3 +9,8 @@ export const CV_LINK = valueOrDefault(
   process.env.NEXT_PUBLIC_CV_LINK as string,
   ""
 );
+
+export const RECAPTCHA_SECRET_KEY = valueOrDefault(
+  process.env.RECAPTCHA_SECRET_KEY as string,
+  ""
+);

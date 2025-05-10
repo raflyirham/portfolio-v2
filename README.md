@@ -14,7 +14,9 @@ This is a second version of my personal portfolio website.
 ## ENV
 
 - NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+- NEXT_PUBLIC_CV_LINK
 - RESEND_API_KEY
+- RECAPTCHA_SECRET_KEY
 - CC_EMAIL
 - FROM_EMAIL
 - FROM_NAME
