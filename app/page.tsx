@@ -31,6 +31,7 @@ import SkillCard from "@/components/skill-card";
 import { HeroHighlight } from "@/components/ui/hero-highlight";
 import { scrollToSection } from "@/libs/utils";
 import ContactForm from "@/components/contact-form";
+import { CV_LINK } from "@/libs/constants";
 
 const NavBar = dynamic(() => import("@/components/navbar"), { ssr: false });
 
@@ -127,10 +128,14 @@ export default function Home() {
                     <IoChevronForwardSharp size={14} />
                   </button>
 
-                  <button className="flex items-center justify-center lg:justify-start gap-x-2 bg-gray-50 font-satoshi font-medium text-blue-700 text-sm md:text-base lg:text-lg px-4 py-2 rounded-full w-full md:w-fit hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all duration-300 cursor-pointer">
+                  <Link
+                    href={CV_LINK}
+                    target="_blank"
+                    className="flex items-center justify-center lg:justify-start gap-x-2 bg-gray-50 font-satoshi font-medium text-blue-700 text-sm md:text-base lg:text-lg px-4 py-2 rounded-full w-full md:w-fit hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all duration-300 cursor-pointer"
+                  >
                     Download CV
                     <MdOutlineFileDownload size={14} />
-                  </button>
+                  </Link>
                 </motion.div>
               </div>
 
