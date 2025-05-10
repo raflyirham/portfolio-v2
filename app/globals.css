@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@layer base {
+  @font-face {
+    font-family: "ClashDisplay";
+    src: url("/assets/fonts/ClashDisplay-Variable.ttf") format("truetype");
+  }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  @font-face {
+    font-family: "Satoshi";
+    src: url("/assets/fonts/Satoshi-Variable.ttf") format("truetype");
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .font-clashDisplay {
+    font-family: "ClashDisplay", sans-serif;
+  }
+
+  .font-satoshi {
+    font-family: "Satoshi", sans-serif;
+  }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+::selection {
+  background-color: var(--color-blue-700);
+  color: var(--color-white);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-gray-900);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-blue-700);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-blue-600);
 }
