@@ -74,9 +74,6 @@ export default function ContactForm() {
         });
       } finally {
         setIsLoading(false);
-        setValue("recaptcha", "", {
-          shouldValidate: true,
-        });
       }
     },
     []
