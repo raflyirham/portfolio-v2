@@ -82,7 +82,7 @@ export default function Home() {
                     }}
                     className="relative inline-block rounded-lg bg-gradient-to-r from-blue-700 to-blue-700 px-1 pb-1 text-white font-satoshi font-medium text-lg md:text-xl w-fit"
                   >
-                    Frontend Engineer
+                    Software Engineer
                   </motion.span>
                 </motion.div>
 
@@ -216,7 +216,7 @@ export default function Home() {
               }}
               className="text-white text-base md:text-xl font-satoshi text-justify md:text-left text-wrap leading-relaxed"
             >
-              A fresh graduate in computer science, specializing as a frontend
+              A fresh graduate in computer science, specializing as a software
               engineer with a growing expertise in web development technologies.
               Familiar with Next.js, React.js, and Express.js for building
               responsive and user-friendly applications. Have experience in
