@@ -6,7 +6,9 @@ import { valueOrDefault } from "@/libs/utils";
 import { API_PATH } from "@/libs/api.-path";
 import { RECAPTCHA_SECRET_KEY } from "@/libs/constants";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,6 +55,17 @@ export async function POST(request: NextRequest) {
     const ccEmail = valueOrDefault(process.env.CC_EMAIL, "");
     const fromEmail = valueOrDefault(process.env.FROM_EMAIL, "");
     const fromName = valueOrDefault(process.env.FROM_NAME, "");
+
+    if (!resend) {
+      return NextResponse.json(
+        {
+          code: 500,
+          status: "error",
+          error: "Resend is not configured",
+        },
+        { status: 500 }
+      );
+    }
 
     const { data, error } = await resend.emails.send({
       from: `${fromName} <${fromEmail}>`,
