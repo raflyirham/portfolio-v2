@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import type { ProjectView } from "@/libs/project-data";
 import type { SkillView } from "@/libs/skills";
@@ -24,15 +24,39 @@ export default function ProjectForm({
   submitLabel,
 }: Readonly<ProjectFormProps>) {
   const selectedSkills = new Set(project?.skills ?? []);
+  const [isPending, startTransition] = useTransition();
+  const [formError, setFormError] = useState<string | null>(null);
   const [previewUrls, setPreviewUrls] = useState<string[]>(
     project?.previewUrls?.length ? [...project.previewUrls] : []
   );
 
+  const handleSubmit = async (formData: FormData) => {
+    setFormError(null);
+
+    startTransition(async () => {
+      try {
+        await action(formData);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Something went wrong while saving the project. Please try again.";
+        setFormError(message);
+      }
+    });
+  };
+
   return (
     <form
-      action={action}
+      action={handleSubmit}
       className="grid gap-6 rounded-2xl border border-[#202024] bg-[#131316] p-6"
     >
+      {formError && (
+        <div className="rounded-lg border border-red-900/70 bg-red-950/30 px-4 py-3 text-sm text-red-200">
+          {formError}
+        </div>
+      )}
+
       <input type="hidden" name="previewUrlsRetained" value={JSON.stringify(previewUrls)} />
 
       <div className="grid gap-2">
@@ -222,9 +246,10 @@ export default function ProjectForm({
         </Link>
         <button
           type="submit"
+          disabled={isPending}
           className="rounded-full bg-blue-700 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-600 active:scale-95"
         >
-          {submitLabel}
+          {isPending ? "Saving..." : submitLabel}
         </button>
       </div>
     </form>

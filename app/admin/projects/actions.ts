@@ -54,6 +54,34 @@ function getPreviewImageFiles(formData: FormData): File[] {
   return items.filter((item): item is File => item instanceof File && item.size > 0);
 }
 
+function isNextRedirectError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof error.digest === "string" &&
+    error.digest.startsWith("NEXT_REDIRECT")
+  );
+}
+
+function normalizeProjectMutationError(error: unknown): Error {
+  if (error instanceof Error) {
+    if (error.message === "Image must be 4MB or smaller.") {
+      return new Error(
+        "Image upload failed: each image must be 4MB or smaller. Please resize or compress the image and try again."
+      );
+    }
+
+    if (error.message === "Image must be a JPG, PNG, or WebP file.") {
+      return new Error("Image upload failed: only JPG, PNG, or WebP files are allowed.");
+    }
+
+    return error;
+  }
+
+  return new Error("Something went wrong while saving the project. Please try again.");
+}
+
 async function buildPreviewUrlList(
   formData: FormData,
   retainedUrls: string[]
@@ -123,98 +151,114 @@ function revalidateProjectPaths(slug: string) {
 }
 
 export async function createProject(formData: FormData) {
-  await requireAdmin();
+  try {
+    await requireAdmin();
 
-  if (!db) {
-    throw new Error("Database is not configured.");
-  }
+    if (!db) {
+      throw new Error("Database is not configured.");
+    }
 
-  const input = getProjectInput(formData);
-  await assertValidSkills(input.skills);
-  const uploadedImage = await uploadProjectImage(getProjectImage(formData) ?? new File([], ""));
-  const imageUrl = uploadedImage?.url ?? input.imageUrl;
+    const input = getProjectInput(formData);
+    await assertValidSkills(input.skills);
+    const uploadedImage = await uploadProjectImage(getProjectImage(formData) ?? new File([], ""));
+    const imageUrl = uploadedImage?.url ?? input.imageUrl;
 
-  if (!imageUrl) {
-    throw new Error("Add a thumbnail URL or upload a thumbnail image.");
-  }
+    if (!imageUrl) {
+      throw new Error("Add a thumbnail URL or upload a thumbnail image.");
+    }
 
-  await assertSlugAvailable(input.slug);
+    await assertSlugAvailable(input.slug);
 
-  const longDescriptionHtml = sanitizeProjectLongDescriptionHtml(input.longDescriptionHtml);
-  const previewUrls = await buildPreviewUrlList(formData, input.previewUrlsRetained);
-  const sortOrder = await nextProjectSortOrder();
+    const longDescriptionHtml = sanitizeProjectLongDescriptionHtml(input.longDescriptionHtml);
+    const previewUrls = await buildPreviewUrlList(formData, input.previewUrlsRetained);
+    const sortOrder = await nextProjectSortOrder();
 
-  await db.insert(projects).values({
-    title: input.title,
-    slug: input.slug,
-    description: input.description,
-    longDescriptionHtml,
-    previewUrls,
-    imageKey: uploadedImage?.key ?? null,
-    imageUrl,
-    repoUrl: input.repoUrl,
-    liveUrl: input.liveUrl,
-    skills: input.skills,
-    sortOrder,
-    isPublished: input.isPublished,
-  });
-
-  revalidateProjectPaths(input.slug);
-  redirect("/admin");
-}
-
-export async function updateProject(id: string, formData: FormData) {
-  await requireAdmin();
-
-  if (!db) {
-    throw new Error("Database is not configured.");
-  }
-
-  const [existing] = await db.select().from(projects).where(eq(projects.id, id));
-
-  if (!existing) {
-    throw new Error("Project not found.");
-  }
-
-  const input = getProjectInput(formData);
-  await assertValidSkills(input.skills);
-  const uploadedImage = await uploadProjectImage(getProjectImage(formData) ?? new File([], ""));
-  const imageUrl = uploadedImage?.url ?? input.imageUrl;
-
-  if (!imageUrl) {
-    throw new Error("Add a thumbnail URL or upload a thumbnail image.");
-  }
-
-  await assertSlugAvailable(input.slug, id);
-
-  const longDescriptionHtml = sanitizeProjectLongDescriptionHtml(input.longDescriptionHtml);
-  const previewUrls = await buildPreviewUrlList(formData, input.previewUrlsRetained);
-
-  await db
-    .update(projects)
-    .set({
+    await db.insert(projects).values({
       title: input.title,
       slug: input.slug,
       description: input.description,
       longDescriptionHtml,
       previewUrls,
-      imageKey: uploadedImage ? uploadedImage.key : existing.imageKey,
+      imageKey: uploadedImage?.key ?? null,
       imageUrl,
       repoUrl: input.repoUrl,
       liveUrl: input.liveUrl,
       skills: input.skills,
-      sortOrder: existing.sortOrder,
+      sortOrder,
       isPublished: input.isPublished,
-      updatedAt: new Date(),
-    })
-    .where(eq(projects.id, id));
+    });
 
-  if (existing.slug !== input.slug) {
-    revalidatePath(`/projects/${existing.slug}`);
+    revalidateProjectPaths(input.slug);
+    redirect("/admin");
+  } catch (error) {
+    if (isNextRedirectError(error)) {
+      throw error;
+    }
+
+    throw normalizeProjectMutationError(error);
   }
+}
 
-  revalidateProjectPaths(input.slug);
-  redirect("/admin");
+export async function updateProject(id: string, formData: FormData) {
+  try {
+    await requireAdmin();
+
+    if (!db) {
+      throw new Error("Database is not configured.");
+    }
+
+    const [existing] = await db.select().from(projects).where(eq(projects.id, id));
+
+    if (!existing) {
+      throw new Error("Project not found.");
+    }
+
+    const input = getProjectInput(formData);
+    await assertValidSkills(input.skills);
+    const uploadedImage = await uploadProjectImage(getProjectImage(formData) ?? new File([], ""));
+    const imageUrl = uploadedImage?.url ?? input.imageUrl;
+
+    if (!imageUrl) {
+      throw new Error("Add a thumbnail URL or upload a thumbnail image.");
+    }
+
+    await assertSlugAvailable(input.slug, id);
+
+    const longDescriptionHtml = sanitizeProjectLongDescriptionHtml(input.longDescriptionHtml);
+    const previewUrls = await buildPreviewUrlList(formData, input.previewUrlsRetained);
+
+    await db
+      .update(projects)
+      .set({
+        title: input.title,
+        slug: input.slug,
+        description: input.description,
+        longDescriptionHtml,
+        previewUrls,
+        imageKey: uploadedImage ? uploadedImage.key : existing.imageKey,
+        imageUrl,
+        repoUrl: input.repoUrl,
+        liveUrl: input.liveUrl,
+        skills: input.skills,
+        sortOrder: existing.sortOrder,
+        isPublished: input.isPublished,
+        updatedAt: new Date(),
+      })
+      .where(eq(projects.id, id));
+
+    if (existing.slug !== input.slug) {
+      revalidatePath(`/projects/${existing.slug}`);
+    }
+
+    revalidateProjectPaths(input.slug);
+    redirect("/admin");
+  } catch (error) {
+    if (isNextRedirectError(error)) {
+      throw error;
+    }
+
+    throw normalizeProjectMutationError(error);
+  }
 }
 
 export async function deleteProject(id: string) {
