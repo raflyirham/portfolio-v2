@@ -306,6 +306,7 @@ export default function Home() {
                     whileInView="visible"
                     viewport={{ once: true }}
                     variants={{
+                      hidden: {},
                       visible: {
                         transition: {
                           staggerChildren: 0.5,
@@ -392,6 +393,7 @@ export default function Home() {
                     whileInView="visible"
                     viewport={{ once: true }}
                     variants={{
+                      hidden: {},
                       visible: {
                         transition: {
                           staggerChildren: 0.5,
@@ -522,6 +524,7 @@ export default function Home() {
                     whileInView="visible"
                     viewport={{ once: true }}
                     variants={{
+                      hidden: {},
                       visible: {
                         transition: {
                           staggerChildren: 0.5,

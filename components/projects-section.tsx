@@ -32,7 +32,16 @@ export default function ProjectsSection() {
         const projectsData = await projectsResponse.json();
 
         if (isMounted && Array.isArray(projectsData.data)) {
-          setProjects(projectsData.data);
+          const list = projectsData.data.filter(
+            (item: unknown): item is ProjectView =>
+              item !== null && typeof item === "object" && "slug" in item
+          );
+          setProjects(
+            list.map((p: ProjectView) => ({
+              ...p,
+              skills: Array.isArray(p.skills) ? p.skills : [],
+            }))
+          );
         }
       }
 
@@ -87,6 +96,7 @@ export default function ProjectsSection() {
         whileInView="visible"
         viewport={{ once: true }}
         variants={{
+          hidden: {},
           visible: {
             transition: {
               staggerChildren: 0.5,

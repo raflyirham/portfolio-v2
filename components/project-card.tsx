@@ -1,4 +1,3 @@
-import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { FiExternalLink } from "react-icons/fi";
@@ -12,6 +11,7 @@ export default function ProjectCard({
   skills,
   liveLink,
   repoLink,
+  thumbnailHeightClass = "h-48",
 }: Readonly<{
   slug: string;
   shortDescription?: string;
@@ -20,13 +20,15 @@ export default function ProjectCard({
   skills: React.ReactNode[];
   liveLink?: string;
   repoLink: string;
+  /** Tailwind height class for the image area (e.g. h-56). */
+  thumbnailHeightClass?: string;
 }>) {
   const detailHref = `/projects/${slug}`;
 
   return (
     <div className="rounded-lg border border-[#202024] bg-[#131316] transition-all duration-300 hover:border-blue-700">
       <Link href={detailHref} className="block">
-        <div className="relative h-48 w-full">
+        <div className={`relative w-full ${thumbnailHeightClass}`}>
           <Image
             src={image}
             alt={title}
@@ -48,24 +50,7 @@ export default function ProjectCard({
 
       <div className="flex flex-row flex-wrap gap-2 px-10 pb-6">{skills}</div>
 
-      <motion.div
-        initial={{
-          opacity: 0,
-          y: 20,
-        }}
-        transition={{
-          duration: 1,
-          ease: [0.4, 0.0, 0.2, 1],
-        }}
-        whileInView={{
-          opacity: 1,
-          y: [20, -5, 0],
-        }}
-        viewport={{
-          once: true,
-        }}
-        className="flex flex-col items-center gap-2 px-4 pb-10 md:px-10 xl:flex-row xl:items-start"
-      >
+      <div className="flex flex-col items-center gap-2 px-4 pb-10 md:px-10 xl:flex-row xl:items-start">
         {liveLink && (
           <Link
             href={liveLink}
@@ -88,7 +73,7 @@ export default function ProjectCard({
             <SiGithub size={20} color="white" />
           </Link>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }

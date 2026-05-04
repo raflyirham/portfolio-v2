@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
         ]
       : [],
   },
+  // Admin project forms upload thumbnail + multiple preview images via Server Actions (default limit is 1 MB).
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "15mb",
+    },
+  },
 };
 
 export default nextConfig;

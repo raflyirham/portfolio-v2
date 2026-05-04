@@ -6,6 +6,8 @@ import { FiExternalLink } from "react-icons/fi";
 import { SiGithub } from "react-icons/si";
 
 import ProjectCard from "@/components/project-card";
+import ProjectPageNav from "@/components/project-page-nav";
+import ProjectPreviewGallery from "@/components/project-preview-gallery";
 import SkillCard from "@/components/skill-card";
 import { sanitizeProjectLongDescriptionHtml } from "@/libs/project-html";
 import { getPublishedProjectBySlug, getRelatedProjects } from "@/libs/projects";
@@ -47,8 +49,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const safeHtml = sanitizeProjectLongDescriptionHtml(project.longDescriptionHtml);
 
   return (
-    <main className="min-h-dvh bg-[#0b0b0d] px-6 py-16 font-satoshi text-gray-200 md:px-10 md:py-24">
-      <div className="mx-auto flex max-w-3xl flex-col gap-10">
+    <main className="min-h-dvh bg-[#0b0b0d] px-6 pb-28 pt-6 font-satoshi text-gray-200 md:px-10 md:pb-24 md:pt-28">
+      <ProjectPageNav />
+      <div className="mx-auto flex max-w-3xl flex-col gap-10 py-10 md:py-16">
         <Link
           href="/#projects"
           className="text-sm font-medium text-blue-400 transition hover:text-blue-300"
@@ -128,16 +131,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-gray-500">
               Previews
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {project.previewUrls.map((url) => (
-                <div
-                  key={url}
-                  className="relative aspect-video w-full overflow-hidden rounded-xl border border-[#202024] bg-[#131316]"
-                >
-                  <Image src={url} alt="" fill className="object-cover" sizes="(max-width: 640px) 100vw, 24rem" />
-                </div>
-              ))}
-            </div>
+            <ProjectPreviewGallery urls={project.previewUrls} />
           </div>
         )}
 
@@ -153,12 +147,15 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           </div>
         )}
 
-        {related.length > 0 && (
-          <section className="border-t border-[#202024] pt-12">
-            <h2 className="mb-6 text-center font-clashDisplay text-2xl font-medium text-white md:text-left">
+      </div>
+
+      {related.length > 0 && (
+        <section className="border-t border-[#202024]">
+          <div className="mx-auto max-w-6xl px-0 py-12 md:py-16">
+            <h2 className="mb-8 text-center font-clashDisplay text-2xl font-medium text-white md:text-left">
               Related projects
             </h2>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
               {related.map((relatedProject) => (
                 <ProjectCard
                   key={relatedProject.id}
@@ -168,6 +165,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                   title={relatedProject.title}
                   liveLink={relatedProject.liveUrl ?? undefined}
                   repoLink={relatedProject.repoUrl ?? ""}
+                  thumbnailHeightClass="h-56 md:h-64"
                   skills={relatedProject.skills.map((skill) => {
                     const skillConfig = skillMap.get(skill);
 
@@ -183,9 +181,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                 />
               ))}
             </div>
-          </section>
-        )}
-      </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }
