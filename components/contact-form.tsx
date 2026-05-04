@@ -1,10 +1,7 @@
 import { useCallback, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  GoogleReCaptchaCheckbox,
-  GoogleReCaptchaProvider,
-} from "@google-recaptcha/react";
+import { GoogleReCaptchaCheckbox } from "@google-recaptcha/react";
 
 import { contactFormSchema, ContactFormSchema } from "@/schemas/form";
 import { RECAPTCHA_SITE_KEY } from "@/libs/constants";
@@ -162,15 +159,12 @@ export default function ContactForm() {
 
       <div className="flex flex-col gap-y-3">
         <input disabled={isLoading} type="hidden" {...register("recaptcha")} />
-        <GoogleReCaptchaProvider
-          type="v2-checkbox"
-          siteKey={RECAPTCHA_SITE_KEY}
-        >
+        {RECAPTCHA_SITE_KEY ? (
           <GoogleReCaptchaCheckbox
             onChange={onRecaptchaChange}
             onExpired={onRecaptchaExpired}
           />
-        </GoogleReCaptchaProvider>
+        ) : null}
 
         {errors.recaptcha?.message && (
           <p className="font-satoshi font-normal text-red-500 text-sm">

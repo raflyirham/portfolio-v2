@@ -2,11 +2,11 @@ import { and, asc, desc, eq } from "drizzle-orm";
 
 import { projects } from "@/db/schema";
 import { db } from "@/libs/db";
-import { defaultProjects, toProjectView, type ProjectView } from "@/libs/project-data";
+import { toProjectView, type ProjectView } from "@/libs/project-data";
 
 export async function getPublishedProjects(): Promise<ProjectView[]> {
   if (!db) {
-    return defaultProjects;
+    return [];
   }
 
   const rows = await db
@@ -20,7 +20,7 @@ export async function getPublishedProjects(): Promise<ProjectView[]> {
 
 export async function getAdminProjects(): Promise<ProjectView[]> {
   if (!db) {
-    return defaultProjects;
+    return [];
   }
 
   const rows = await db
@@ -33,7 +33,7 @@ export async function getAdminProjects(): Promise<ProjectView[]> {
 
 export async function getProjectById(id: string): Promise<ProjectView | null> {
   if (!db) {
-    return defaultProjects.find((project) => project.id === id) ?? null;
+    return null;
   }
 
   const [project] = await db.select().from(projects).where(eq(projects.id, id));
@@ -45,7 +45,7 @@ export async function getPublishedProjectBySlug(
   slug: string
 ): Promise<ProjectView | null> {
   if (!db) {
-    return defaultProjects.find((project) => project.slug === slug && project.isPublished) ?? null;
+    return null;
   }
 
   const [project] = await db

@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import ProjectCard from "@/components/project-card";
 import SkillCard from "@/components/skill-card";
 import { API_PATH } from "@/libs/api.-path";
-import { defaultProjects, type ProjectView } from "@/libs/project-data";
+import { type ProjectView } from "@/libs/project-data";
 import {
   defaultSkills,
   getSkillIconNode,
@@ -14,7 +14,8 @@ import {
 } from "@/libs/skills";
 
 export default function ProjectsSection() {
-  const [projects, setProjects] = useState<ProjectView[]>(defaultProjects);
+  const [projects, setProjects] = useState<ProjectView[]>([]);
+  const [isProjectsLoading, setIsProjectsLoading] = useState(true);
   const [skills, setSkills] = useState<Pick<SkillView, "key" | "label" | "iconKey">[]>(
     defaultSkills
   );
@@ -23,33 +24,39 @@ export default function ProjectsSection() {
     let isMounted = true;
 
     async function loadData() {
-      const [projectsResponse, skillsResponse] = await Promise.all([
-        fetch(API_PATH.PROJECTS, { cache: "no-store" }),
-        fetch(API_PATH.SKILLS, { cache: "no-store" }),
-      ]);
+      try {
+        const [projectsResponse, skillsResponse] = await Promise.all([
+          fetch(API_PATH.PROJECTS, { cache: "no-store" }),
+          fetch(API_PATH.SKILLS, { cache: "no-store" }),
+        ]);
 
-      if (projectsResponse.ok) {
-        const projectsData = await projectsResponse.json();
+        if (projectsResponse.ok) {
+          const projectsData = await projectsResponse.json();
 
-        if (isMounted && Array.isArray(projectsData.data)) {
-          const list = projectsData.data.filter(
-            (item: unknown): item is ProjectView =>
-              item !== null && typeof item === "object" && "slug" in item
-          );
-          setProjects(
-            list.map((p: ProjectView) => ({
-              ...p,
-              skills: Array.isArray(p.skills) ? p.skills : [],
-            }))
-          );
+          if (isMounted && Array.isArray(projectsData.data)) {
+            const list = projectsData.data.filter(
+              (item: unknown): item is ProjectView =>
+                item !== null && typeof item === "object" && "slug" in item
+            );
+            setProjects(
+              list.map((p: ProjectView) => ({
+                ...p,
+                skills: Array.isArray(p.skills) ? p.skills : [],
+              }))
+            );
+          }
         }
-      }
 
-      if (skillsResponse.ok) {
-        const skillsData = await skillsResponse.json();
+        if (skillsResponse.ok) {
+          const skillsData = await skillsResponse.json();
 
-        if (isMounted && Array.isArray(skillsData.data)) {
-          setSkills(skillsData.data);
+          if (isMounted && Array.isArray(skillsData.data)) {
+            setSkills(skillsData.data);
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setIsProjectsLoading(false);
         }
       }
     }
@@ -91,52 +98,73 @@ export default function ProjectsSection() {
         Projects
       </motion.h2>
 
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={{
-          hidden: {},
-          visible: {
-            transition: {
-              staggerChildren: 0.5,
-              delayChildren: 1,
+      {isProjectsLoading ? (
+        <div className="grid grid-cols-1 gap-x-4 gap-y-8 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={`project-loader-${index}`}
+              className="animate-pulse rounded-lg border border-[#202024] bg-[#131316] p-6"
+            >
+              <div className="mb-4 aspect-video w-full rounded-md bg-[#202024]" />
+              <div className="mb-2 h-6 w-3/4 rounded bg-[#202024]" />
+              <div className="mb-4 h-4 w-full rounded bg-[#202024]" />
+              <div className="mb-6 h-4 w-5/6 rounded bg-[#202024]" />
+              <div className="flex gap-2">
+                <div className="h-8 w-20 rounded-full bg-[#202024]" />
+                <div className="h-8 w-16 rounded-full bg-[#202024]" />
+                <div className="h-8 w-24 rounded-full bg-[#202024]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={{
+            hidden: {},
+            visible: {
+              transition: {
+                staggerChildren: 0.5,
+                delayChildren: 1,
+              },
             },
-          },
-        }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8"
-      >
-        {projects.map((project) => (
-          <motion.div
-            key={project.id}
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0 },
-            }}
-          >
-            <ProjectCard
-              slug={project.slug}
-              shortDescription={project.description ?? undefined}
-              image={project.imageUrl}
-              title={project.title}
-              liveLink={project.liveUrl ?? undefined}
-              repoLink={project.repoUrl ?? ""}
-              skills={project.skills.map((skill) => {
-                const skillConfig = skillMap.get(skill);
+          }}
+          className="grid grid-cols-1 gap-x-4 gap-y-8 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {projects.map((project) => (
+            <motion.div
+              key={project.id}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+            >
+              <ProjectCard
+                slug={project.slug}
+                shortDescription={project.description ?? undefined}
+                image={project.imageUrl}
+                title={project.title}
+                liveLink={project.liveUrl ?? undefined}
+                repoLink={project.repoUrl ?? ""}
+                skills={project.skills.map((skill) => {
+                  const skillConfig = skillMap.get(skill);
 
-                return (
-                  <SkillCard
-                    key={skill}
-                    skill={skillConfig?.label ?? skill}
-                    icon={getSkillIconNode(skillConfig?.iconKey ?? "")}
-                    size="small"
-                  />
-                );
-              })}
-            />
-          </motion.div>
-        ))}
-      </motion.div>
+                  return (
+                    <SkillCard
+                      key={skill}
+                      skill={skillConfig?.label ?? skill}
+                      icon={getSkillIconNode(skillConfig?.iconKey ?? "")}
+                      size="small"
+                    />
+                  );
+                })}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
     </section>
   );
 }
