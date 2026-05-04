@@ -3,29 +3,21 @@
 import { useState, useEffect } from "react";
 
 const useResponsive = () => {
-  const [isMobile, setIsMobile] = useState<boolean>(
-    () => window.innerWidth < 768
-  );
-  const [isTablet, setIsTablet] = useState<boolean>(
-    () => window.innerWidth >= 768 && window.innerWidth < 1024
-  );
-  const [isDesktop, setIsDesktop] = useState<boolean>(
-    () => window.innerWidth >= 1024
-  );
-
-  const handleResize = () => {
-    setIsMobile(window.innerWidth < 768);
-    setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
-    setIsDesktop(window.innerWidth >= 1024);
-  };
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(true);
 
   useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      setIsMobile(w < 768);
+      setIsTablet(w >= 768 && w < 1024);
+      setIsDesktop(w >= 1024);
+    };
+
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    handleResize();
   }, []);
 
   return { isMobile, isTablet, isDesktop };

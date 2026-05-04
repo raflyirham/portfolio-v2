@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 
+import { RecaptchaRootProvider } from "@/components/recaptcha-root-provider";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +19,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="antialiased">
         <Toaster position="bottom-right" reverseOrder={false} />
-        {children}
+        <RecaptchaRootProvider>{children}</RecaptchaRootProvider>
       </body>
     </html>
   );
