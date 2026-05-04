@@ -52,17 +52,17 @@ const extensionByType: Record<string, string> = {
   "image/webp": "webp",
 };
 
-export async function uploadProjectImage(file: File) {
+async function uploadImageWithKeyPrefix(file: File, keyPrefix: string) {
   if (file.size === 0) {
     return null;
   }
 
   if (!allowedImageTypes.has(file.type)) {
-    throw new Error("Project image must be a JPG, PNG, or WebP file.");
+    throw new Error("Image must be a JPG, PNG, or WebP file.");
   }
 
   if (file.size > maxImageSize) {
-    throw new Error("Project image must be 4MB or smaller.");
+    throw new Error("Image must be 4MB or smaller.");
   }
 
   const config = getR2Config();
@@ -72,7 +72,8 @@ export async function uploadProjectImage(file: File) {
     throw new Error("R2 is not configured.");
   }
 
-  const key = `projects/${crypto.randomUUID()}.${extensionByType[file.type]}`;
+  const normalizedPrefix = keyPrefix.replace(/^\/+|\/+$/g, "");
+  const key = `${normalizedPrefix}/${crypto.randomUUID()}.${extensionByType[file.type]}`;
   const body = Buffer.from(await file.arrayBuffer());
 
   await client.send(
@@ -88,4 +89,12 @@ export async function uploadProjectImage(file: File) {
     key,
     url: `${config.publicBaseUrl}/${key}`,
   };
+}
+
+export async function uploadProjectImage(file: File) {
+  return uploadImageWithKeyPrefix(file, "projects");
+}
+
+export async function uploadProjectPreviewImage(file: File) {
+  return uploadImageWithKeyPrefix(file, "projects/previews");
 }

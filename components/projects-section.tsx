@@ -1,98 +1,60 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  ExpressOriginal,
-  LaravelOriginal,
-  MongodbOriginal,
-  NextjsOriginal,
-  NodejsOriginal,
-  PostgresqlOriginal,
-  PrismaOriginal,
-  ReactOriginal,
-  TailwindcssOriginal,
-  TypescriptOriginal,
-} from "devicons-react";
 import { motion } from "motion/react";
 
 import ProjectCard from "@/components/project-card";
 import SkillCard from "@/components/skill-card";
 import { API_PATH } from "@/libs/api.-path";
 import { defaultProjects, type ProjectView } from "@/libs/project-data";
-
-const skillIconMap: Record<string, { label: string; icon: React.ReactNode }> = {
-  express: {
-    label: "Express.js",
-    icon: <ExpressOriginal size={20} />,
-  },
-  laravel: {
-    label: "Laravel",
-    icon: <LaravelOriginal size={20} />,
-  },
-  mongodb: {
-    label: "MongoDB",
-    icon: <MongodbOriginal size={20} />,
-  },
-  nextjs: {
-    label: "Next.js",
-    icon: <NextjsOriginal size={20} />,
-  },
-  nodejs: {
-    label: "Node.js",
-    icon: <NodejsOriginal size={20} />,
-  },
-  postgresql: {
-    label: "PostgreSQL",
-    icon: <PostgresqlOriginal size={20} />,
-  },
-  prisma: {
-    label: "Prisma",
-    icon: <PrismaOriginal size={20} />,
-  },
-  react: {
-    label: "React.js",
-    icon: <ReactOriginal size={20} />,
-  },
-  tailwind: {
-    label: "Tailwind CSS",
-    icon: <TailwindcssOriginal size={20} />,
-  },
-  typescript: {
-    label: "TypeScript",
-    icon: <TypescriptOriginal size={20} />,
-  },
-};
+import {
+  defaultSkills,
+  getSkillIconNode,
+  type SkillView,
+} from "@/libs/skills";
 
 export default function ProjectsSection() {
   const [projects, setProjects] = useState<ProjectView[]>(defaultProjects);
+  const [skills, setSkills] = useState<Pick<SkillView, "key" | "label" | "iconKey">[]>(
+    defaultSkills
+  );
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadProjects() {
-      const response = await fetch(API_PATH.PROJECTS, {
-        cache: "no-store",
-      });
+    async function loadData() {
+      const [projectsResponse, skillsResponse] = await Promise.all([
+        fetch(API_PATH.PROJECTS, { cache: "no-store" }),
+        fetch(API_PATH.SKILLS, { cache: "no-store" }),
+      ]);
 
-      if (!response.ok) {
-        return;
+      if (projectsResponse.ok) {
+        const projectsData = await projectsResponse.json();
+
+        if (isMounted && Array.isArray(projectsData.data)) {
+          setProjects(projectsData.data);
+        }
       }
 
-      const responseData = await response.json();
+      if (skillsResponse.ok) {
+        const skillsData = await skillsResponse.json();
 
-      if (isMounted && Array.isArray(responseData.data)) {
-        setProjects(responseData.data);
+        if (isMounted && Array.isArray(skillsData.data)) {
+          setSkills(skillsData.data);
+        }
       }
     }
 
-    loadProjects().catch((error) => {
-      console.error("Failed to load projects", error);
+    loadData().catch((error) => {
+      console.error("Failed to load projects section data", error);
     });
 
     return () => {
       isMounted = false;
     };
   }, []);
+
+  const skillMap = new Map(skills.map((skill) => [skill.key, skill]));
 
   return (
     <section
@@ -143,18 +105,20 @@ export default function ProjectsSection() {
             }}
           >
             <ProjectCard
+              slug={project.slug}
+              shortDescription={project.description ?? undefined}
               image={project.imageUrl}
               title={project.title}
               liveLink={project.liveUrl ?? undefined}
               repoLink={project.repoUrl ?? ""}
               skills={project.skills.map((skill) => {
-                const skillConfig = skillIconMap[skill];
+                const skillConfig = skillMap.get(skill);
 
                 return (
                   <SkillCard
                     key={skill}
                     skill={skillConfig?.label ?? skill}
-                    icon={skillConfig?.icon}
+                    icon={getSkillIconNode(skillConfig?.iconKey ?? "")}
                     size="small"
                   />
                 );

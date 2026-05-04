@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { projectSkillKeys } from "@/libs/project-data";
+export const MAX_PROJECT_PREVIEWS = 12;
 
 const optionalUrlSchema = z
   .string()
@@ -8,6 +8,40 @@ const optionalUrlSchema = z
   .optional()
   .transform((value) => (value ? value : null))
   .pipe(z.string().url().nullable());
+
+function parsePreviewUrlsRetained(raw: string | undefined): string[] {
+  const text = raw?.trim() ? raw.trim() : "[]";
+
+  try {
+    const parsed: unknown = JSON.parse(text);
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    const urls: string[] = [];
+
+    for (const item of parsed) {
+      if (typeof item !== "string") {
+        continue;
+      }
+
+      const check = z.string().url().safeParse(item);
+
+      if (check.success) {
+        urls.push(check.data);
+      }
+
+      if (urls.length >= MAX_PROJECT_PREVIEWS) {
+        break;
+      }
+    }
+
+    return urls;
+  } catch {
+    return [];
+  }
+}
 
 export const projectFormSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
@@ -24,13 +58,19 @@ export const projectFormSchema = z.object({
     .trim()
     .optional()
     .transform((value) => (value ? value : null)),
+  longDescriptionHtml: z
+    .string()
+    .max(100_000)
+    .optional()
+    .transform((value) => (value?.trim() ? value : null)),
+  previewUrlsRetained: z
+    .string()
+    .optional()
+    .transform((raw) => parsePreviewUrlsRetained(raw)),
   imageUrl: optionalUrlSchema,
   repoUrl: optionalUrlSchema,
   liveUrl: optionalUrlSchema,
-  skills: z
-    .array(z.enum(projectSkillKeys as [string, ...string[]]))
-    .min(1, "Select at least one skill"),
-  sortOrder: z.coerce.number().int().min(0),
+  skills: z.array(z.string().trim().min(1)).min(1, "Select at least one skill"),
   isPublished: z.coerce.boolean(),
 });
 

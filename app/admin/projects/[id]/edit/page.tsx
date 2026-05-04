@@ -4,6 +4,7 @@ import { updateProject } from "@/app/admin/projects/actions";
 import AdminShell from "@/components/admin/admin-shell";
 import ProjectForm from "@/components/admin/project-form";
 import { getProjectById } from "@/libs/projects";
+import { getSkills } from "@/libs/skills";
 
 interface EditProjectPageProps {
   params: Promise<{
@@ -13,7 +14,7 @@ interface EditProjectPageProps {
 
 export default async function EditProjectPage({ params }: EditProjectPageProps) {
   const { id } = await params;
-  const project = await getProjectById(id);
+  const [project, skills] = await Promise.all([getProjectById(id), getSkills()]);
 
   if (!project) {
     notFound();
@@ -32,6 +33,7 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
       <ProjectForm
         action={updateProject.bind(null, project.id)}
         project={project}
+        skillOptions={skills}
         submitLabel="Update project"
       />
     </AdminShell>

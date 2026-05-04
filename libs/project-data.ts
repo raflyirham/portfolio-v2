@@ -5,6 +5,8 @@ export interface ProjectView {
   title: string;
   slug: string;
   description: string | null;
+  longDescriptionHtml: string | null;
+  previewUrls: string[];
   imageKey: string | null;
   imageUrl: string;
   repoUrl: string | null;
@@ -16,27 +18,14 @@ export interface ProjectView {
   updatedAt: Date;
 }
 
-export const projectSkillOptions = [
-  { key: "laravel", label: "Laravel" },
-  { key: "nextjs", label: "Next.js" },
-  { key: "react", label: "React.js" },
-  { key: "tailwind", label: "Tailwind CSS" },
-  { key: "typescript", label: "TypeScript" },
-  { key: "postgresql", label: "PostgreSQL" },
-  { key: "prisma", label: "Prisma" },
-  { key: "nodejs", label: "Node.js" },
-  { key: "express", label: "Express.js" },
-  { key: "mongodb", label: "MongoDB" },
-] as const;
-
-export const projectSkillKeys = projectSkillOptions.map(({ key }) => key);
-
 export const defaultProjects: ProjectView[] = [
   {
     id: "quezt",
     title: "Quezt",
     slug: "quezt",
     description: null,
+    longDescriptionHtml: null,
+    previewUrls: [],
     imageKey: null,
     imageUrl: "/assets/images/quezt.png",
     repoUrl: "https://github.com/raflyirham/Quezt",
@@ -52,6 +41,8 @@ export const defaultProjects: ProjectView[] = [
     title: "Movier",
     slug: "movier",
     description: null,
+    longDescriptionHtml: null,
+    previewUrls: [],
     imageKey: null,
     imageUrl: "/assets/images/movier.png",
     repoUrl: "https://github.com/raflyirham/Movier",
@@ -67,6 +58,8 @@ export const defaultProjects: ProjectView[] = [
     title: "WeatherID",
     slug: "weather-id",
     description: null,
+    longDescriptionHtml: null,
+    previewUrls: [],
     imageKey: null,
     imageUrl: "/assets/images/weather-id.png",
     repoUrl: "https://github.com/raflyirham/WeatherID",
@@ -82,6 +75,8 @@ export const defaultProjects: ProjectView[] = [
     title: "Pomodoro",
     slug: "pomodoro",
     description: null,
+    longDescriptionHtml: null,
+    previewUrls: [],
     imageKey: null,
     imageUrl: "/assets/images/pomodoro.png",
     repoUrl: "https://github.com/raflyirham/Pomodoro",
@@ -99,6 +94,8 @@ export const toProjectView = (project: Project): ProjectView => ({
   title: project.title,
   slug: project.slug,
   description: project.description,
+  longDescriptionHtml: project.longDescriptionHtml,
+  previewUrls: project.previewUrls ?? [],
   imageKey: project.imageKey,
   imageUrl: project.imageUrl,
   repoUrl: project.repoUrl,

@@ -1,8 +1,11 @@
 import { createProject } from "@/app/admin/projects/actions";
 import AdminShell from "@/components/admin/admin-shell";
 import ProjectForm from "@/components/admin/project-form";
+import { getSkills } from "@/libs/skills";
 
-export default function NewProjectPage() {
+export default async function NewProjectPage() {
+  const skills = await getSkills();
+
   return (
     <AdminShell>
       <div className="mb-6">
@@ -13,7 +16,7 @@ export default function NewProjectPage() {
           Add a project to the public portfolio grid.
         </p>
       </div>
-      <ProjectForm action={createProject} submitLabel="Create project" />
+      <ProjectForm action={createProject} skillOptions={skills} submitLabel="Create project" />
     </AdminShell>
   );
 }
