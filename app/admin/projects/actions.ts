@@ -324,23 +324,23 @@ export async function reorderProjects(orderedIds: string[]) {
     return;
   }
 
-  await db.transaction(async (tx) => {
-    for (let index = 0; index < orderedIds.length; index++) {
-      const projectId = orderedIds[index];
+  const updatedAt = new Date();
 
-      if (!projectId) {
-        continue;
-      }
+  for (let index = 0; index < orderedIds.length; index++) {
+    const projectId = orderedIds[index];
 
-      await tx
-        .update(projects)
-        .set({
-          sortOrder: index,
-          updatedAt: new Date(),
-        })
-        .where(eq(projects.id, projectId));
+    if (!projectId) {
+      continue;
     }
-  });
+
+    await db
+      .update(projects)
+      .set({
+        sortOrder: index,
+        updatedAt,
+      })
+      .where(eq(projects.id, projectId));
+  }
 
   revalidatePath("/");
   revalidatePath("/admin");
